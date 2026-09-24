@@ -26,9 +26,12 @@ const int SERVER_LED = 6;
 const int LIGHTING_LED = 9;
 const int LEISURE_LED = 10;
 
-const int BATTERY_LED_R = 7; //Battery led
-const int BATTERY_LED_G = 12;
-const int BATTERY_LED_B = 2;
+const int GRID_RGB_R = 7; //Battery led
+const int GRID_RGB_G = 12;
+const int GRID_RGB_B = 2;
+
+// Buzzer
+const int BUZZER_PIN = 11;
 
 unsigned long lastSend = 0;
 const unsigned long SEND_INTERVAL = 500;
@@ -138,9 +141,12 @@ void setup()
     pinMode(LIGHTING_LED, OUTPUT);
     pinMode(LEISURE_LED, OUTPUT);
 
-    pinMode(BATTERY_LED_R, OUTPUT);
-    pinMode(BATTERY_LED_G, OUTPUT);
-    pinMode(BATTERY_LED_B, OUTPUT);
+    pinMode(GRID_RGB_R, OUTPUT);
+    pinMode(GRID_RGB_G, OUTPUT);
+    pinMode(GRID_RGB_B, OUTPUT);
+
+    pinMode(BUZZER_PIN, OUTPUT);
+    digitalWrite(BUZZER_PIN, LOW);
 
     pinMode(CLK, INPUT_PULLUP);
     pinMode(DT, INPUT_PULLUP);
@@ -200,9 +206,13 @@ void processCommand(String cmd)
     int lighting   = getValue(cmd, "LIG:");
     int leisure    = getValue(cmd, "LEI:");
 
-    int batteryR   = getValue(cmd, "BR:");
-    int batteryG   = getValue(cmd, "BG:");
-    int batteryB   = getValue(cmd, "BB:");
+    int batteryState = getValue(cmd, "BAT:");
+
+    int rgbR   = getValue(cmd, "RGBR:");
+    int rgbG   = getValue(cmd, "RGBG:");
+    int rgbB   = getValue(cmd, "RGBB:");
+
+    int buzzer = getValue(cmd, "BUZ:");
 
     if (survival >= 0)
         analogWrite(SURVIVAL_LED, survival);
@@ -222,14 +232,38 @@ void processCommand(String cmd)
     if (leisure >= 0)
         analogWrite(LEISURE_LED, leisure);
 
-    if (batteryR >= 0)
-        analogWrite(BATTERY_LED_R, batteryR);
+    if (batteryState >= 0)
+    {
+        setBatteryState(batteryState);
+    }
 
-    if (batteryG >= 0)
-        analogWrite(BATTERY_LED_G, batteryG);
+    if (
+        rgbR >= 0 &&
+        rgbG >= 0 &&
+        rgbB >= 0
+    )
+    {
+        analogWrite(GRID_RGB_R, rgbR);
+        analogWrite(GRID_RGB_G, rgbG);
+        analogWrite(GRID_RGB_B, rgbB);
+    }
 
-    if (batteryB >= 0)
-        analogWrite(BATTERY_LED_B, batteryB);
+    if (buzzer >= 0)
+    {
+        if (buzzer)
+        {
+            tone(
+                BUZZER_PIN,
+                1000
+            );
+        }
+        else
+        {
+            noTone(
+                BUZZER_PIN
+            );
+        }
+    }
 }
 
 int getValue(String data, String key)
@@ -247,36 +281,6 @@ int getValue(String data, String key)
         end = data.length();
 
     return data.substring(start, end).toInt();
-}
-
-void setBatteryState(int state)
-{
-    switch(state)
-    {
-        case 0: // Red
-            digitalWrite(BATTERY_LED_R, HIGH);
-            digitalWrite(BATTERY_LED_G, LOW);
-            digitalWrite(BATTERY_LED_B, LOW);
-            break;
-
-        case 1: // Yellow
-            digitalWrite(BATTERY_LED_R, HIGH);
-            digitalWrite(BATTERY_LED_G, HIGH);
-            digitalWrite(BATTERY_LED_B, LOW);
-            break;
-
-        case 2: // Green
-            digitalWrite(BATTERY_LED_R, LOW);
-            digitalWrite(BATTERY_LED_G, HIGH);
-            digitalWrite(BATTERY_LED_B, LOW);
-            break;
-
-        case 3: // Blue
-            digitalWrite(BATTERY_LED_R, LOW);
-            digitalWrite(BATTERY_LED_G, LOW);
-            digitalWrite(BATTERY_LED_B, HIGH);
-            break;
-    }
 }
 
 void updateEncoder()

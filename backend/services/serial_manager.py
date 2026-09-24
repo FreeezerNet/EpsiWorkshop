@@ -46,7 +46,10 @@ class SerialManager:
     def send_outputs(
         self,
         sector_intensities: dict,
-        battery_state: int
+        rgb_r: int,
+        rgb_g: int,
+        rgb_b: int,
+        buzzer: bool
     ):
         command = (
             f"SUR:{sector_intensities['survival']};"
@@ -55,7 +58,10 @@ class SerialManager:
             f"SRV:{sector_intensities['server']};"
             f"LIG:{sector_intensities['lighting']};"
             f"LEI:{sector_intensities['leisure']};"
-            f"BAT:{battery_state}\n"
+            f"RGBR:{rgb_r};"
+            f"RGBG:{rgb_g};"
+            f"RGBB:{rgb_b};"
+            f"BUZ:{int(buzzer)}\n"
         )
 
         self.serial.write(
